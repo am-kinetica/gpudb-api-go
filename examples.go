@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/gisfederal/gpudb-api-go/example"
-	"bitbucket.org/gisfederal/gpudb-api-go/gpudb"
+	"github.com/am-kinetica/gpudb-api-go/example"
+	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
 )
