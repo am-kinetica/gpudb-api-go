@@ -73,13 +73,13 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		GetColumnInfo:      true,
 	})
 	if err != nil {
-		errors = append(errors, err)
+		return nil, err
 	}
 
 	typeSchema := showTableResult.TypeSchemas[0]
 	recordSchema, recordErr := avro.Parse(typeSchema)
 	if recordErr != nil {
-		errors = append(errors, recordErr)
+		return nil, err
 	}
 
 	// Convert the records into a byte array according to the Avro schema
