@@ -1,6 +1,3 @@
-//go:build go1.18
-// +build go1.18
-
 package gpudb
 
 import (
@@ -12,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -210,9 +208,11 @@ func (gpudb *Gpudb) submitRawRequest(
 }
 
 func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *resty.Request {
+
 	var (
 		// childCtx context.Context
 		childSpan trace.Span
+		mutex     = &sync.Mutex{}
 	)
 
 	_, childSpan = gpudb.tracer.Start(ctx, "gpudb.buildHttpRequest()")
@@ -225,6 +225,7 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	request := gpudb.client.R().
 		SetBasicAuth(gpudb.options.Username, gpudb.options.Password)
 
+	mutex.Lock()
 	if gpudb.options.UseSnappy {
 		snappyRequestBody := snappy.Encode(nil, *requestBody)
 
@@ -235,6 +236,8 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 		childSpan.SetAttributes(attribute.String("Content-type", "application/octet-stream"))
 		request = request.SetHeader("Content-type", "application/octet-stream").SetBody(*requestBody)
 	}
+
+	mutex.Unlock()
 
 	if gpudb.options.TraceHTTP {
 		request = request.EnableTrace()
