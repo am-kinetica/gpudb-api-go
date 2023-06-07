@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"go.opentelemetry.io/otel/trace"
 )
@@ -147,16 +148,18 @@ func (gpudb *Gpudb) ShowTableRaw(ctx context.Context, table string) (*ShowTableR
 func (gpudb *Gpudb) ShowTableRawWithOpts(
 	ctx context.Context, table string, options *ShowTableOptions) (*ShowTableResponse, error) {
 	var (
-		childCtx  context.Context
-		childSpan trace.Span
+		childCtx       context.Context
+		childSpan      trace.Span
+		showTableMutex *sync.Mutex
 	)
 
 	childCtx, childSpan = gpudb.tracer.Start(ctx, "gpudb.ShowTableRawWithOpts()")
 	defer childSpan.End()
+	showTableMutex = &sync.Mutex{}
 
-	gpudb.mutex.Lock()
+	showTableMutex.Lock()
 	mapOptions := gpudb.buildShowTableOptionsMap(childCtx, options)
-	gpudb.mutex.Unlock()
+	showTableMutex.Unlock()
 
 	response := ShowTableResponse{}
 	request := ShowTableRequest{TableName: table, Options: mapOptions}

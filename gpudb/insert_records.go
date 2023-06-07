@@ -3,6 +3,7 @@ package gpudb
 import (
 	"context"
 	"strconv"
+	"sync"
 
 	"github.com/hamba/avro"
 	"go.opentelemetry.io/otel/trace"
@@ -58,13 +59,16 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 	ctx context.Context,
 	table string, data []interface{}, options *InsertRecordsOptions) (*InsertRecordsResponse, error) {
 	var (
-		childCtx  context.Context
-		childSpan trace.Span
-		errors    []error
+		childCtx           context.Context
+		childSpan          trace.Span
+		errors             []error
+		insertRecordsMutex *sync.Mutex
 	)
 
 	childCtx, childSpan = gpudb.tracer.Start(ctx, "gpudb.InsertRecordsRawWithOpts()")
 	defer childSpan.End()
+	insertRecordsMutex = &sync.Mutex{}
+
 	showTableResult, err := gpudb.ShowTableRawWithOpts(context.TODO(), table, &ShowTableOptions{
 		ForceSynchronous:   true,
 		GetSizes:           false,
@@ -92,9 +96,9 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		buffer[i] = buf
 	}
 
-	gpudb.mutex.Lock()
+	insertRecordsMutex.Lock()
 	mapOptions := gpudb.buildInsertRecordsOptionsMap(childCtx, options)
-	gpudb.mutex.Unlock()
+	insertRecordsMutex.Unlock()
 
 	response := InsertRecordsResponse{}
 	request := InsertRecordsRequest{
