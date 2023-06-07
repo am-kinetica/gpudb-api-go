@@ -218,6 +218,7 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	_, childSpan = gpudb.tracer.Start(ctx, "gpudb.buildHttpRequest()")
 	defer childSpan.End()
 
+	gpudb.mutex.Lock()
 	if gpudb.options.ByPassSslCertCheck {
 		gpudb.client.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	}
@@ -243,6 +244,7 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	childSpan.AddEvent("gpudb.buildHttpRequest()", trace.WithAttributes(
 		attribute.String("Spew: ", spew.Sdump(request)),
 	))
+	gpudb.mutex.Unlock()
 
 	return request
 }
