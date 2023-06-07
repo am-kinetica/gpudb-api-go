@@ -28,6 +28,7 @@ type Gpudb struct {
 	options *GpudbOptions
 	client  *resty.Client
 	tracer  trace.Tracer
+	mutex   sync.Mutex
 }
 
 type GpudbOptions struct {
@@ -70,7 +71,7 @@ func NewWithOptions(ctx context.Context, url string, options *GpudbOptions) *Gpu
 		}
 	}
 
-	return &Gpudb{url: url, options: options, client: client, tracer: tracer}
+	return &Gpudb{url: url, options: options, client: client, tracer: tracer, mutex: sync.Mutex{}}
 }
 
 func parseSchema(asset string) *avro.Schema {
@@ -212,7 +213,6 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	var (
 		// childCtx context.Context
 		childSpan trace.Span
-		mutex     = &sync.Mutex{}
 	)
 
 	_, childSpan = gpudb.tracer.Start(ctx, "gpudb.buildHttpRequest()")
@@ -225,7 +225,6 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	request := gpudb.client.R().
 		SetBasicAuth(gpudb.options.Username, gpudb.options.Password)
 
-	mutex.Lock()
 	if gpudb.options.UseSnappy {
 		snappyRequestBody := snappy.Encode(nil, *requestBody)
 
@@ -236,8 +235,6 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 		childSpan.SetAttributes(attribute.String("Content-type", "application/octet-stream"))
 		request = request.SetHeader("Content-type", "application/octet-stream").SetBody(*requestBody)
 	}
-
-	mutex.Unlock()
 
 	if gpudb.options.TraceHTTP {
 		request = request.EnableTrace()
