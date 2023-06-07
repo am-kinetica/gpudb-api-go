@@ -154,7 +154,10 @@ func (gpudb *Gpudb) ShowTableRawWithOpts(
 	childCtx, childSpan = gpudb.tracer.Start(ctx, "gpudb.ShowTableRawWithOpts()")
 	defer childSpan.End()
 
+	gpudb.mutex.Lock()
 	mapOptions := gpudb.buildShowTableOptionsMap(childCtx, options)
+	gpudb.mutex.Unlock()
+
 	response := ShowTableResponse{}
 	request := ShowTableRequest{TableName: table, Options: mapOptions}
 	err := gpudb.submitRawRequest(

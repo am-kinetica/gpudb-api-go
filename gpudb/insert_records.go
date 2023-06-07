@@ -92,7 +92,10 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		buffer[i] = buf
 	}
 
+	gpudb.mutex.Lock()
 	mapOptions := gpudb.buildInsertRecordsOptionsMap(childCtx, options)
+	gpudb.mutex.Unlock()
+
 	response := InsertRecordsResponse{}
 	request := InsertRecordsRequest{
 		TableName:    table,
