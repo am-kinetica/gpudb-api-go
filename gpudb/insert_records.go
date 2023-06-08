@@ -98,7 +98,6 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 
 	insertRecordsMutex.Lock()
 	mapOptions := gpudb.buildInsertRecordsOptionsMap(childCtx, options)
-	insertRecordsMutex.Unlock()
 
 	response := InsertRecordsResponse{}
 	request := InsertRecordsRequest{
@@ -108,6 +107,8 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		ListEncoding: "binary",
 		Options:      *mapOptions,
 	}
+	insertRecordsMutex.Unlock()
+
 	err = gpudb.submitRawRequest(
 		childCtx, "/insert/records",
 		&Schemas.insertRecordsRequest, &Schemas.insertRecordsResponse,

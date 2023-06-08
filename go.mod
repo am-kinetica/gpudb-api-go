@@ -13,6 +13,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0
 )
 
+require go.uber.org/atomic v1.7.0 // indirect
+
 require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -23,6 +25,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	go.uber.org/multierr v1.11.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.9.0 // indirect
 
 )
