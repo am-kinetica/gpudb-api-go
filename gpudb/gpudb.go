@@ -231,14 +231,10 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 
 		childSpan.SetAttributes(attribute.String("Content-type", "application/x-snappy"))
 
-		gpudb.client.SetHeader("Content-type", "application/octet-stream")
-		// request = request.SetHeader("Content-type", "application/x-snappy").SetBody(snappyRequestBody)
-		request = request.SetBody(snappyRequestBody)
+		request = request.SetHeader("Content-type", "application/x-snappy").SetBody(snappyRequestBody)
 	} else {
 		childSpan.SetAttributes(attribute.String("Content-type", "application/octet-stream"))
-		gpudb.client.SetHeader("Content-type", "application/octet-stream")
-		// request = request.SetHeader("Content-type", "application/octet-stream").SetBody(*requestBody)
-		request = request.SetBody(*requestBody)
+		request = request.SetHeader("Content-type", "application/octet-stream").SetBody(*requestBody)
 	}
 
 	if gpudb.options.TraceHTTP {
