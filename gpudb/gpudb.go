@@ -16,6 +16,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/golang/snappy"
 	"github.com/hamba/avro"
+	"github.com/kr/pretty"
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -242,7 +243,7 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	}
 
 	childSpan.AddEvent("gpudb.buildHttpRequest()", trace.WithAttributes(
-		attribute.String("Spew: ", spew.Sdump(request)),
+		attribute.String("Spew: ", pretty.Sprintf("%# v", request)),
 	))
 	gpudb.mutex.Unlock()
 
