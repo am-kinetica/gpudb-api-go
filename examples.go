@@ -4,19 +4,25 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/am-kinetica/gpudb-api-go/example"
 	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
 func main() {
 	endpoint := "https://172.17.0.2:8082/gpudb-0" //os.Args[1]
 	username := "admin"                           //os.Args[2]
 	password := "Kinetica1."                      //os.Args[3]
-
+	Logger, err := zap.NewProduction()
+	if err != nil {
+		fmt.Println(err)
+	}
 	ctx := context.TODO()
 	options := gpudb.GpudbOptions{Username: username, Password: password, ByPassSslCertCheck: true}
 	// fmt.Println("Options", options)
@@ -52,14 +58,14 @@ func main() {
 	// runExecuteSql2(gpudbInst)
 	// runExecuteSql3(gpudbInst)
 	// runExecuteSql4(gpudbInst)
-	runExecuteSql5(gpudbInst)
+	// runExecuteSql5(gpudbInst)
 	// runShowSchema1(gpudbInst)
 	// runShowTable1(gpudbInst)
 	// runGetRecords1(gpudbInst)
 	// runGetRecords2(gpudbInst)
 	// runGetRecords3(gpudbInst)
-	runGetRecords4(gpudbInst)
-	// runInsertRecords(gpudbInst)
+	// runGetRecords4(gpudbInst)
+	runInsertRecords(Logger, gpudbInst)
 	// runCreateResourceGroup(gpudbInst, "lucid_test")
 	// runDeleteResourceGroup(gpudbInst, "lucid_test")
 	// runCreateSchema(gpudbInst, "lucid_test")
@@ -292,7 +298,20 @@ func runGetRecords4(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("GetRecordsStruct", duration.Milliseconds(), " ms")
 }
 
-func runInsertRecords(gpudbInst *gpudb.Gpudb) {
+// ChunkBySize - Splits a slice into multiple slices of the given size
+//
+//	@param items
+//	@param chunkSize
+//	@return [][]T
+func ChunkBySize[T any](items []T, chunkSize int) [][]T {
+	var _chunks = make([][]T, 0, (len(items)/chunkSize)+1)
+	for chunkSize < len(items) {
+		items, _chunks = items[chunkSize:], append(_chunks, items[0:chunkSize:chunkSize])
+	}
+	return append(_chunks, items)
+}
+
+func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
 	in, err := os.Open("./example/trace_span.csv")
 	if err != nil {
 		panic(err)
@@ -322,17 +341,39 @@ func runInsertRecords(gpudbInst *gpudb.Gpudb) {
 		}
 		spanAttributeRecords[i] = example.SpanAttribute{SpanID: spans[i].ID, Key: fmt.Sprintf("Key%d", i), AttributeValue: attribValue}
 	}
-	response, err := gpudbInst.InsertRecordsRaw(context.TODO(), "otel.trace_span", spanRecords)
-	if err != nil {
-		panic(err)
-	}
 
-	response, err = gpudbInst.InsertRecordsRaw(context.TODO(), "otel.trace_span_attribute", spanAttributeRecords)
-	if err != nil {
-		panic(err)
-	}
+	logger.Info("Span records : ", zap.Int("Count", len(spanRecords)))
+	logger.Info("Span attribute records : ", zap.Int("Count", len(spanAttributeRecords)))
 
-	fmt.Println("Records inserted =", response.CountInserted)
+	wg := &sync.WaitGroup{}
+
+	wg.Add(1)
+	go func(data []any, logger *zap.Logger, wg *sync.WaitGroup) {
+		logger.Info("Inserting Span records")
+		err = doChunkedInsert(context.TODO(), logger, gpudbInst, "otel.trace_span", data)
+		if err != nil {
+			fmt.Println(err)
+		}
+		wg.Done()
+	}(spanRecords, logger, wg)
+
+	wg.Add(1)
+	go func(data []any, logger *zap.Logger, wg *sync.WaitGroup) {
+		logger.Info("Inserting Span attribute records")
+		err = doChunkedInsert(context.TODO(), logger, gpudbInst, "otel.trace_span_attribute", data)
+		if err != nil {
+			fmt.Println(err)
+		}
+		wg.Done()
+	}(spanAttributeRecords, logger, wg)
+
+	wg.Wait()
+	// response, err := gpudbInst.InsertRecordsRaw(context.TODO(), "otel.trace_span_attribute", spanAttributeRecords)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	fmt.Println("All done")
 }
 
 func runCreateJob(gpudbInst *gpudb.Gpudb) {
@@ -349,4 +390,43 @@ func runCreateJob(gpudbInst *gpudb.Gpudb) {
 
 func noop(elem interface{}) {
 
+}
+
+func doChunkedInsert(ctx context.Context, logger *zap.Logger, gpudbInst *gpudb.Gpudb, tableName string, records []any) error {
+
+	logger.Info("Writing to - ", zap.String("Table", tableName), zap.Int("Record count", len(records)))
+
+	recordChunks := ChunkBySize(records, 10000)
+
+	errsChan := make(chan error, len(recordChunks))
+	respChan := make(chan int, len(recordChunks))
+
+	wg := &sync.WaitGroup{}
+	// var mutex = &sync.Mutex{}
+
+	for _, recordChunk := range recordChunks {
+		wg.Add(1)
+		go func(data []any, wg *sync.WaitGroup) {
+
+			// mutex.Lock()
+			resp, err := gpudbInst.InsertRecordsRaw(context.TODO(), tableName, data)
+			errsChan <- err
+			respChan <- resp.CountInserted
+			// mutex.Unlock()
+
+			wg.Done()
+		}(recordChunk, wg)
+	}
+	wg.Wait()
+	close(errsChan)
+	close(respChan)
+	var errs error
+	for err := range errsChan {
+		errs = multierr.Append(errs, err)
+	}
+
+	for resp := range respChan {
+		fmt.Println("Count Inserted = ", resp)
+	}
+	return errs
 }
