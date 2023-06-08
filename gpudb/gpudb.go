@@ -16,7 +16,6 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/golang/snappy"
 	"github.com/hamba/avro"
-	"github.com/kr/pretty"
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -212,12 +211,9 @@ func (gpudb *Gpudb) submitRawRequest(
 func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *resty.Request {
 
 	var (
-		// childCtx context.Context
-		childSpan trace.Span
+	// childCtx context.Context
+	// childSpan trace.Span
 	)
-
-	_, childSpan = gpudb.tracer.Start(ctx, "gpudb.buildHttpRequest()")
-	defer childSpan.End()
 
 	// gpudb.mutex.Lock()
 	if gpudb.options.ByPassSslCertCheck {
@@ -230,11 +226,8 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 	if gpudb.options.UseSnappy {
 		snappyRequestBody := snappy.Encode(nil, *requestBody)
 
-		childSpan.SetAttributes(attribute.String("Content-type", "application/x-snappy"))
-
 		request = request.SetHeader("Content-type", "application/x-snappy").SetBody(snappyRequestBody)
 	} else {
-		childSpan.SetAttributes(attribute.String("Content-type", "application/octet-stream"))
 		request = request.SetHeader("Content-type", "application/octet-stream").SetBody(*requestBody)
 	}
 
@@ -242,9 +235,6 @@ func (gpudb *Gpudb) buildHTTPRequest(ctx context.Context, requestBody *[]byte) *
 		request = request.EnableTrace()
 	}
 
-	childSpan.AddEvent("gpudb.buildHttpRequest()", trace.WithAttributes(
-		attribute.String("Spew: ", pretty.Sprintf("%# v", request)),
-	))
 	// gpudb.mutex.Unlock()
 
 	return request
