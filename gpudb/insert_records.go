@@ -3,7 +3,6 @@ package gpudb
 import (
 	"context"
 	"strconv"
-	"sync"
 
 	"github.com/hamba/avro"
 	"go.opentelemetry.io/otel/trace"
@@ -59,15 +58,15 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 	ctx context.Context,
 	table string, data []interface{}, options *InsertRecordsOptions) (*InsertRecordsResponse, error) {
 	var (
-		childCtx           context.Context
-		childSpan          trace.Span
-		errors             []error
-		insertRecordsMutex *sync.Mutex
+		childCtx  context.Context
+		childSpan trace.Span
+		errors    []error
+		// insertRecordsMutex *sync.Mutex
 	)
 
 	childCtx, childSpan = gpudb.tracer.Start(ctx, "gpudb.InsertRecordsRawWithOpts()")
 	defer childSpan.End()
-	insertRecordsMutex = &sync.Mutex{}
+	// insertRecordsMutex = &sync.Mutex{}
 
 	showTableResult, err := gpudb.ShowTableRawWithOpts(context.TODO(), table, &ShowTableOptions{
 		ForceSynchronous:   true,
@@ -96,7 +95,7 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		buffer[i] = buf
 	}
 
-	insertRecordsMutex.Lock()
+	// insertRecordsMutex.Lock()
 	mapOptions := gpudb.buildInsertRecordsOptionsMap(childCtx, options)
 
 	response := InsertRecordsResponse{}
@@ -107,7 +106,7 @@ func (gpudb *Gpudb) InsertRecordsRawWithOpts(
 		ListEncoding: "binary",
 		Options:      *mapOptions,
 	}
-	insertRecordsMutex.Unlock()
+	// insertRecordsMutex.Unlock()
 
 	err = gpudb.submitRawRequest(
 		childCtx, "/insert/records",
