@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -28,7 +27,6 @@ type Kinetica struct {
 	options *KineticaOptions
 	client  *resty.Client
 	tracer  trace.Tracer
-	mutex   sync.Mutex
 }
 
 type KineticaOptions struct {
@@ -71,7 +69,7 @@ func NewWithOptions(ctx context.Context, url string, options *KineticaOptions) *
 		}
 	}
 
-	return &Kinetica{url: url, options: options, client: client, tracer: tracer, mutex: sync.Mutex{}}
+	return &Kinetica{url: url, options: options, client: client, tracer: tracer}
 }
 
 func parseSchema(asset string) *avro.Schema {
