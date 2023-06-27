@@ -10,7 +10,7 @@
 </h5>
 
 
-# Kinetica JavaScript API
+# Kinetica GOLANG API
 
 -  [Overview](#overview)
 -  [Support](#support)
