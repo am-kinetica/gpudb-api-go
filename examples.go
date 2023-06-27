@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/am-kinetica/gpudb-api-go/example"
-	"github.com/am-kinetica/gpudb-api-go/gpudb"
+	"github.com/am-kinetica/gpudb-api-go/kinetica"
 	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
@@ -24,9 +24,9 @@ func main() {
 		fmt.Println(err)
 	}
 	ctx := context.TODO()
-	options := gpudb.GpudbOptions{Username: username, Password: password, ByPassSslCertCheck: true}
+	options := kinetica.KineticaOptions{Username: username, Password: password, ByPassSslCertCheck: true}
 	// fmt.Println("Options", options)
-	gpudbInst := gpudb.NewWithOptions(ctx, endpoint, &options)
+	dbInst := kinetica.NewWithOptions(ctx, endpoint, &options)
 
 	var anyValue []any
 	intSlice := []int{1, 2, 3, 4}
@@ -34,49 +34,49 @@ func main() {
 
 	fmt.Println(anyValue...)
 
-	// runShowExplainVerboseAnalyseSqlStatement(gpudbInst)
-	// runShowExplainVerboseSqlStatement(gpudbInst)
-	// runShowStoredProcedureDDL(gpudbInst)
-	// runShowTableDDL(gpudbInst)
-	// runShowTableResourcesBySchema1(gpudbInst)
-	// runAggregateGroupBy1(gpudbInst)
-	// runAggregateGroupBy2(gpudbInst)
-	// runAggregateGroupBy3(gpudbInst)
-	// runAggregateStatistics1(gpudbInst)
-	// runAggregateStatistics2(gpudbInst)
-	// runShowResourceGroups1(gpudbInst)
-	// runShowSecurity1(gpudbInst)
-	// runShowResourceStatistics1(gpudbInst)
-	// runShowResourceStatistics2(gpudbInst)
-	// runShowResourceStatistics3(gpudbInst)
-	// runShowSqlProc1(gpudbInst)
-	// runShowSqlProc2(gpudbInst)
-	// runShowSystemStatus1(gpudbInst)
-	// runShowSystemTiming1(gpudbInst)
-	// runShowSystemProperties1(gpudbInst)
-	// runExecuteSql1(gpudbInst)
-	// runExecuteSql2(gpudbInst)
-	// runExecuteSql3(gpudbInst)
-	// runExecuteSql4(gpudbInst)
-	// runExecuteSql5(gpudbInst)
-	// runShowSchema1(gpudbInst)
-	// runShowTable1(gpudbInst)
-	// runGetRecords1(gpudbInst)
-	// runGetRecords2(gpudbInst)
-	// runGetRecords3(gpudbInst)
-	// runGetRecords4(gpudbInst)
-	runInsertRecords(Logger, gpudbInst)
-	// runCreateResourceGroup(gpudbInst, "lucid_test")
-	// runDeleteResourceGroup(gpudbInst, "lucid_test")
-	// runCreateSchema(gpudbInst, "lucid_test")
-	// runDropSchema(gpudbInst, "lucid_test")
+	// runShowExplainVerboseAnalyseSqlStatement(dbInst)
+	// runShowExplainVerboseSqlStatement(dbInst)
+	// runShowStoredProcedureDDL(dbInst)
+	// runShowTableDDL(dbInst)
+	// runShowTableResourcesBySchema1(dbInst)
+	// runAggregateGroupBy1(dbInst)
+	// runAggregateGroupBy2(dbInst)
+	// runAggregateGroupBy3(dbInst)
+	// runAggregateStatistics1(dbInst)
+	// runAggregateStatistics2(dbInst)
+	// runShowResourceGroups1(dbInst)
+	// runShowSecurity1(dbInst)
+	// runShowResourceStatistics1(dbInst)
+	// runShowResourceStatistics2(dbInst)
+	// runShowResourceStatistics3(dbInst)
+	// runShowSqlProc1(dbInst)
+	// runShowSqlProc2(dbInst)
+	// runShowSystemStatus1(dbInst)
+	// runShowSystemTiming1(dbInst)
+	// runShowSystemProperties1(dbInst)
+	// runExecuteSql1(dbInst)
+	// runExecuteSql2(dbInst)
+	// runExecuteSql3(dbInst)
+	// runExecuteSql4(dbInst)
+	// runExecuteSql5(dbInst)
+	// runShowSchema1(dbInst)
+	// runShowTable1(dbInst)
+	// runGetRecords1(dbInst)
+	// runGetRecords2(dbInst)
+	// runGetRecords3(dbInst)
+	// runGetRecords4(dbInst)
+	runInsertRecords(Logger, dbInst)
+	// runCreateResourceGroup(dbInst, "lucid_test")
+	// runDeleteResourceGroup(dbInst, "lucid_test")
+	// runCreateSchema(dbInst, "lucid_test")
+	// runDropSchema(dbInst, "lucid_test")
 
 }
 
-func runShowExplainVerboseAnalyseSqlStatement(gpudbInst *gpudb.Gpudb) {
+func runShowExplainVerboseAnalyseSqlStatement(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	// string field
-	result, err := gpudbInst.ShowExplainVerboseAnalyseSqlStatement(context.TODO(), `select * from 
+	result, err := dbInst.ShowExplainVerboseAnalyseSqlStatement(context.TODO(), `select * from 
 (select vendor_id, payment_type, sum(fare_amount) as sum_fare1 from demo.nyctaxi group by vendor_id, payment_type) a
 inner join
 (select vendor_id, rate_code_id, sum(trip_distance) as sum_trip1 from demo.nyctaxi group by vendor_id, rate_code_id) b
@@ -101,10 +101,10 @@ on a.vendor_id = b.vendor_id
 	fmt.Println("ShowExplainVerboseAnalyseSqlStatement", duration.Milliseconds(), " ms")
 }
 
-func runShowExplainVerboseSqlStatement(gpudbInst *gpudb.Gpudb) {
+func runShowExplainVerboseSqlStatement(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	// string field
-	result, err := gpudbInst.ShowExplainVerboseSqlStatement(context.TODO(), "select count(*) from demo.nyctaxi")
+	result, err := dbInst.ShowExplainVerboseSqlStatement(context.TODO(), "select count(*) from demo.nyctaxi")
 	if err != nil {
 		panic(err)
 	}
@@ -113,10 +113,10 @@ func runShowExplainVerboseSqlStatement(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ShowExplainVerboseSqlStatement", duration.Milliseconds(), " ms")
 }
 
-func runShowStoredProcedureDDL(gpudbInst *gpudb.Gpudb) {
+func runShowStoredProcedureDDL(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	// string field
-	result, err := gpudbInst.ShowStoredProcedureDDL(context.TODO(), "OPENSKY.opensky_processing")
+	result, err := dbInst.ShowStoredProcedureDDL(context.TODO(), "OPENSKY.opensky_processing")
 	if err != nil {
 		panic(err)
 	}
@@ -125,10 +125,10 @@ func runShowStoredProcedureDDL(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ShowStoredProcedureDDL", duration.Milliseconds(), " ms")
 }
 
-func runShowTableDDL(gpudbInst *gpudb.Gpudb) {
+func runShowTableDDL(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	// string field
-	result, err := gpudbInst.ShowTableDDL(context.TODO(), "demo.nyctaxi_shard")
+	result, err := dbInst.ShowTableDDL(context.TODO(), "demo.nyctaxi_shard")
 	if err != nil {
 		panic(err)
 	}
@@ -137,10 +137,10 @@ func runShowTableDDL(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ShowTableDDL", duration.Milliseconds(), " ms")
 }
 
-func runShowTable1(gpudbInst *gpudb.Gpudb) {
+func runShowTable1(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	//result, err := gpudbInst.ShowTableRaw("MASTER.nyctaxi")
-	result, err := gpudbInst.ShowTableRawWithOpts(context.TODO(), "otel.trace_span", &gpudb.ShowTableOptions{
+	//result, err := dbInst.ShowTableRaw("MASTER.nyctaxi")
+	result, err := dbInst.ShowTableRawWithOpts(context.TODO(), "otel.trace_span", &kinetica.ShowTableOptions{
 		ForceSynchronous:   true,
 		GetSizes:           true,
 		ShowChildren:       false, // needs to be false for tables
@@ -155,9 +155,9 @@ func runShowTable1(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ShowTable", duration.Milliseconds(), " ms")
 }
 
-func runShowSystemStatus1(gpudbInst *gpudb.Gpudb) {
+func runShowSystemStatus1(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudbInst.ShowSystemStatusRaw(context.TODO())
+	result, err := dbInst.ShowSystemStatusRaw(context.TODO())
 	if err != nil {
 		panic(err)
 	}
@@ -166,9 +166,9 @@ func runShowSystemStatus1(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ShowSystemStatusRaw", duration.Milliseconds(), " ms")
 }
 
-func runShowSystemProperties1(gpudbInst *gpudb.Gpudb) {
+func runShowSystemProperties1(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudbInst.ShowSystemPropertiesRaw(context.TODO())
+	result, err := dbInst.ShowSystemPropertiesRaw(context.TODO())
 	if err != nil {
 		panic(err)
 	}
@@ -178,12 +178,12 @@ func runShowSystemProperties1(gpudbInst *gpudb.Gpudb) {
 }
 
 // Insert SQL test - Works
-func runExecuteSql4(gpudbInst *gpudb.Gpudb) {
+func runExecuteSql4(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	sql := `INSERT INTO otel.trace_span
 	(id, resource_id, scope_id, event_id, link_id, trace_id, span_id, parent_span_id, trace_state, name, span_kind, start_time_unix_nano, end_time_unix_nano, dropped_attributes_count, dropped_events_count, dropped_links_count, message, status_code)
 	VALUES('3f02a130-726f-4fda-a115-18a12e7c5884', 'ba3bd6c7-afdf-43aa-9287-375b956720db', 'b4006169-85d3-4874-bcff-49f2af13d9a0', '6d820f15-99f2-4e05-803c-e80c8be8748a', '56e36b10-a184-4fc1-8aa6-d3105e954972', '5b8aa5a2d2c872e8321cf37308d69df2', '5fb397be34d26b51', '051581bf3cb55c13', '', 'Hello-Greetings', 0, 1651258378114000000, 1651272778114000000, 0, 0, 0, '', 0)`
-	result, err := gpudbInst.ExecuteSqlRaw(context.TODO(), sql, 0, 0, "", nil)
+	result, err := dbInst.ExecuteSqlRaw(context.TODO(), sql, 0, 0, "", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -192,13 +192,13 @@ func runExecuteSql4(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ExecuteSqlRaw -Insert", duration.Milliseconds(), " ms")
 }
 
-func runExecuteSql5(gpudbInst *gpudb.Gpudb) {
+func runExecuteSql5(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	uuid := uuid.New().String()
 	fmt.Println(uuid)
 	fmt.Println(len(uuid))
 
-	result, err := gpudb.ExecuteSqlStructWithOpts[example.SampleExecuteSql](context.TODO(), *gpudbInst, "select trace_id from ki_home.sample", 0, 10, gpudb.NewDefaultExecuteSqlOptions())
+	result, err := kinetica.ExecuteSqlStructWithOpts[example.SampleExecuteSql](context.TODO(), *dbInst, "select trace_id from ki_home.sample", 0, 10, kinetica.NewDefaultExecuteSqlOptions())
 	if err != nil {
 		panic(err)
 	}
@@ -209,13 +209,13 @@ func runExecuteSql5(gpudbInst *gpudb.Gpudb) {
 }
 
 // This fails
-func runExecuteSql3(gpudbInst *gpudb.Gpudb) {
+func runExecuteSql3(dbInst *kinetica.Kinetica) {
 	start := time.Now()
 	uuid := uuid.New().String()
 	fmt.Println(uuid)
 	fmt.Println(len(uuid))
 
-	result, err := gpudbInst.ExecuteSqlStruct(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10, func() interface{} { return example.SampleExecuteSql{} })
+	result, err := dbInst.ExecuteSqlStruct(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10, func() interface{} { return example.SampleExecuteSql{} })
 	if err != nil {
 		panic(err)
 	}
@@ -229,9 +229,9 @@ func runExecuteSql3(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ExecuteSqlStruct", duration.Milliseconds(), " ms")
 }
 
-func runExecuteSql2(gpudbInst *gpudb.Gpudb) {
+func runExecuteSql2(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudbInst.ExecuteSqlMap(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10)
+	result, err := dbInst.ExecuteSqlMap(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -241,9 +241,9 @@ func runExecuteSql2(gpudbInst *gpudb.Gpudb) {
 }
 
 // This works
-func runExecuteSql1(gpudbInst *gpudb.Gpudb) {
+func runExecuteSql1(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudbInst.ExecuteSqlRaw(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10, "", nil)
+	result, err := dbInst.ExecuteSqlRaw(context.TODO(), "select max(trace_id) as max_trace_id from ki_home.sample", 0, 10, "", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -252,9 +252,9 @@ func runExecuteSql1(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("ExecuteSqlRaw", duration.Milliseconds(), " ms")
 }
 
-func runGetRecords1(gpudbInst *gpudb.Gpudb) {
+func runGetRecords1(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudbInst.GetRecordsStruct(context.TODO(), "ki_home.sample", 0, 10, func() interface{} { return example.SampleGetRecords{} })
+	result, err := dbInst.GetRecordsStruct(context.TODO(), "ki_home.sample", 0, 10, func() interface{} { return example.SampleGetRecords{} })
 	if err != nil {
 		panic(err)
 	}
@@ -263,11 +263,11 @@ func runGetRecords1(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("GetRecordsStruct", duration.Milliseconds(), " ms")
 }
 
-func runGetRecords2(gpudbInst *gpudb.Gpudb) {
+func runGetRecords2(dbInst *kinetica.Kinetica) {
 	messages := make(chan interface{}, 1000)
 
 	start := time.Now()
-	gpudbInst.GetRecordsStructSendChannel(context.TODO(), "MASTER.nyctaxi", 0, 1000, messages, func() interface{} { return example.NycTaxi{} })
+	dbInst.GetRecordsStructSendChannel(context.TODO(), "MASTER.nyctaxi", 0, 1000, messages, func() interface{} { return example.NycTaxi{} })
 	for elem := range messages {
 		noop(elem)
 	}
@@ -275,10 +275,10 @@ func runGetRecords2(gpudbInst *gpudb.Gpudb) {
 	fmt.Println("GetRecordsStruct", duration.Milliseconds(), " ms")
 }
 
-func runGetRecords3(gpudbInst *gpudb.Gpudb) {
+func runGetRecords3(dbInst *kinetica.Kinetica) {
 
 	start := time.Now()
-	response, err := gpudbInst.GetRecordsRaw(context.TODO(), "otel.trace_span", 0, 50)
+	response, err := dbInst.GetRecordsRaw(context.TODO(), "otel.trace_span", 0, 50)
 	if err != nil {
 		panic(err)
 	}
@@ -287,9 +287,9 @@ func runGetRecords3(gpudbInst *gpudb.Gpudb) {
 	fmt.Println(response)
 }
 
-func runGetRecords4(gpudbInst *gpudb.Gpudb) {
+func runGetRecords4(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	result, err := gpudb.GetRecordsStructWithOpts[example.SampleGetRecords](context.TODO(), *gpudbInst, "ki_home.sample", 0, 10, gpudb.NewDefaultGetRecordsOptions())
+	result, err := kinetica.GetRecordsStructWithOpts[example.SampleGetRecords](context.TODO(), *dbInst, "ki_home.sample", 0, 10, kinetica.NewDefaultGetRecordsOptions())
 	if err != nil {
 		panic(err)
 	}
@@ -311,7 +311,7 @@ func ChunkBySize[T any](items []T, chunkSize int) [][]T {
 	return append(_chunks, items)
 }
 
-func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
+func runInsertRecords(logger *zap.Logger, dbInst *kinetica.Kinetica) {
 	in, err := os.Open("./example/trace_span.csv")
 	if err != nil {
 		panic(err)
@@ -350,7 +350,7 @@ func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
 	wg.Add(1)
 	go func(data []any, logger *zap.Logger, wg *sync.WaitGroup) {
 		logger.Info("Inserting Span records")
-		err = doChunkedInsert(context.TODO(), logger, gpudbInst, "otel.trace_span", data)
+		err = doChunkedInsert(context.TODO(), logger, dbInst, "otel.trace_span", data)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -360,7 +360,7 @@ func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
 	wg.Add(1)
 	go func(data []any, logger *zap.Logger, wg *sync.WaitGroup) {
 		logger.Info("Inserting Span attribute records")
-		err = doChunkedInsert(context.TODO(), logger, gpudbInst, "otel.trace_span_attribute", data)
+		err = doChunkedInsert(context.TODO(), logger, dbInst, "otel.trace_span_attribute", data)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -368,7 +368,7 @@ func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
 	}(spanAttributeRecords, logger, wg)
 
 	wg.Wait()
-	// response, err := gpudbInst.InsertRecordsRaw(context.TODO(), "otel.trace_span_attribute", spanAttributeRecords)
+	// response, err := dbInst.InsertRecordsRaw(context.TODO(), "otel.trace_span_attribute", spanAttributeRecords)
 	// if err != nil {
 	// 	panic(err)
 	// }
@@ -376,9 +376,9 @@ func runInsertRecords(logger *zap.Logger, gpudbInst *gpudb.Gpudb) {
 	fmt.Println("All done")
 }
 
-func runCreateJob(gpudbInst *gpudb.Gpudb) {
+func runCreateJob(dbInst *kinetica.Kinetica) {
 	start := time.Now()
-	// result, err := gpudbInst.CreateJobRaw(
+	// result, err := dbInst.CreateJobRaw(
 	// 	"OPENSKY")
 	// if err != nil {
 	// 	panic(err)
@@ -392,7 +392,7 @@ func noop(elem interface{}) {
 
 }
 
-func doChunkedInsert(ctx context.Context, logger *zap.Logger, gpudbInst *gpudb.Gpudb, tableName string, records []any) error {
+func doChunkedInsert(ctx context.Context, logger *zap.Logger, dbInst *kinetica.Kinetica, tableName string, records []any) error {
 
 	logger.Info("Writing to - ", zap.String("Table", tableName), zap.Int("Record count", len(records)))
 
@@ -409,7 +409,7 @@ func doChunkedInsert(ctx context.Context, logger *zap.Logger, gpudbInst *gpudb.G
 		go func(data []any, wg *sync.WaitGroup) {
 
 			// mutex.Lock()
-			resp, err := gpudbInst.InsertRecordsRaw(context.TODO(), tableName, data)
+			resp, err := dbInst.InsertRecordsRaw(context.TODO(), tableName, data)
 			errsChan <- err
 			respChan <- resp.CountInserted
 			// mutex.Unlock()
