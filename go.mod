@@ -13,11 +13,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0
 )
 
-require (
-	github.com/kr/text v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-)
+require go.uber.org/atomic v1.7.0 // indirect
 
 require (
 	github.com/go-logr/logr v1.2.4 // indirect
@@ -25,7 +21,6 @@ require (
 	github.com/gocarina/gocsv v0.0.0-20230513223533-9ddd7fd60602
 	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kr/pretty v0.3.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
